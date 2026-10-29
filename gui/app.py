@@ -16,6 +16,7 @@ import sys
 import time
 import socket
 import threading
+import uuid
 from datetime import datetime
 
 from flask import Flask, request, jsonify, send_file, render_template_string
@@ -30,6 +31,15 @@ from leadgen.pipeline import load_crm_names
 from leadgen.diagnostics import check_connectivity, friendly_error, explain_empty_result
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    return response
 
 # In-memory job store: job_id -> {log, done, error, stats, leads, files}
 JOBS: dict[str, dict] = {}
@@ -91,18 +101,20 @@ def run_job(job_id: str, params: dict):
 
         stem = os.path.join(
             OUT_DIR,
-            f"{params['vertical']}_{_slug(market) or 'demo'}_{datetime.now():%Y%m%d_%H%M%S}")
+            f"{params['vertical']}_{_slug(market) or 'demo'}_"
+            f"{datetime.now():%Y%m%d_%H%M%S}_{job_id[:8]}")
 
         log(f"Vertical: {vertical.label}" + ("  (DEMO MODE)" if demo else ""))
+        run_metadata = {}
         leads = run_pipeline(
             vertical, market,
             sources=sources, limit=limit, enrich=enrich, enrich_cap=enrich_cap,
             category_filter=category_filter, radius_km=radius_km or None,
             out_stem=stem, config_override=override or None,
-            exclude_names=exclude, demo=demo, log=log,
+            exclude_names=exclude, demo=demo, log=log, run_metadata=run_metadata,
         )
 
-        files = run_pipeline.last_outputs  # (csv_path, xlsx_path) or None
+        files = run_metadata.get("outputs")  # (csv_path, xlsx_path) or None
         job["files"] = {
             "csv": os.path.basename(files[0]) if files else None,
             "xlsx": os.path.basename(files[1]) if files else None,
@@ -156,16 +168,66 @@ def index():
 
 @app.route("/run", methods=["POST"])
 def start_run():
-    params = request.get_json(force=True)
+    if not request.is_json:
+        return jsonify({"error": "Request body must be JSON."}), 415
+    params = request.get_json(silent=True)
+    if not isinstance(params, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
     if not params.get("vertical"):
         return jsonify({"error": "vertical is required"}), 400
+    if params["vertical"] not in all_verticals():
+        return jsonify({"error": "Unsupported vertical."}), 400
     if not params.get("demo") and not params.get("market"):
         return jsonify({"error": "market is required (or use Demo mode)"}), 400
-    jid = str(int(time.time() * 1000))
+    if len(str(params.get("market") or "")) > 200:
+        return jsonify({"error": "market is too long (maximum 200 characters)."}), 400
+    if params.get("crm_csv") and len(str(params["crm_csv"])) > 200_000:
+        return jsonify({"error": "CRM CSV is too large (maximum 200 KB)."}), 413
+    requested_sources = params.get("sources", ["osm"])
+    if not isinstance(requested_sources, list):
+        return jsonify({"error": "sources must be a list."}), 400
+    if any(source not in {"osm", "overture"} for source in requested_sources):
+        return jsonify({"error": "sources contains an unsupported data source."}), 400
+    allowed_categories = {
+        "all", "food", "retail", "healthcare", "professional",
+        "automotive", "hospitality", "fitness", "beauty",
+    }
+    categories = params.get("category_filter", "all")
+    if not isinstance(categories, str) or any(
+        item.strip().lower() not in allowed_categories
+        for item in categories.split(",") if item.strip()
+    ):
+        return jsonify({"error": "category_filter contains an unsupported category."}), 400
+    for field, minimum, maximum in (("limit", 1, 500), ("enrich_cap", 0, 100)):
+        if field in params and params[field] not in (None, ""):
+            try:
+                value = int(params[field])
+            except (TypeError, ValueError):
+                return jsonify({"error": f"{field} must be a whole number."}), 400
+            if not minimum <= value <= maximum:
+                return jsonify({"error": f"{field} must be between {minimum} and {maximum}."}), 400
+    if "radius_km" in params and params["radius_km"] not in (None, ""):
+        try:
+            radius = float(params["radius_km"])
+        except (TypeError, ValueError):
+            return jsonify({"error": "radius_km must be a number."}), 400
+        if not 0 <= radius <= 100:
+            return jsonify({"error": "radius_km must be between 0 and 100."}), 400
+    jid = uuid.uuid4().hex
     JOBS[jid] = {"log": [], "done": False, "error": None, "notice": None,
                  "stats": None, "leads": None, "files": None, "columns": None}
     threading.Thread(target=run_job, args=(jid, params), daemon=True).start()
     return jsonify({"job_id": jid})
+
+
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status": "ok"})
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify({"error": "Request is too large."}), 413
 
 
 @app.route("/check")
@@ -199,10 +261,14 @@ def download(kind, jid):
     job = JOBS.get(jid)
     if not job or not job.get("files"):
         return "Not ready", 404
+    if kind not in {"csv", "xlsx"}:
+        return "No such file", 404
     fname = job["files"].get(kind)
     if not fname:
         return "No such file", 404
-    path = os.path.join(OUT_DIR, fname)
+    path = os.path.abspath(os.path.join(OUT_DIR, fname))
+    if os.path.dirname(path) != os.path.abspath(OUT_DIR):
+        return "No such file", 404
     if not os.path.exists(path):
         return "File missing", 404
     return send_file(path, as_attachment=True, download_name=fname)
@@ -655,9 +721,9 @@ checkBtn.addEventListener("click", async ()=>{
   try{
     const j=await (await fetch("/check")).json();
     let h=j.results.map(p=>`<div class="probe"><span class="dot ${p.ok?'ok':'bad'}"></span>`
-      +`<b>${p.label}</b> — ${p.detail}</div>`).join("");
+      +`<b>${esc(p.label)}</b> — ${esc(p.detail)}</div>`).join("");
     const cls=(j.can_overture||j.can_osm)?(j.can_overture&&j.can_osm?"good":"warn"):"bad";
-    h+=`<div class="banner ${cls}">${j.summary}</div>`;
+    h+=`<div class="banner ${cls}">${esc(j.summary)}</div>`;
     checkout.innerHTML=h;
   }catch(e){ checkout.innerHTML="<div class='banner bad'>Could not run the check.</div>"; }
   checkBtn.disabled=false;

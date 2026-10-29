@@ -69,12 +69,25 @@ def write_vcard(leads: list[dict], path: str) -> str:
 # ── Per-tier CSV splits ───────────────────────────────────────────────────────
 
 def write_per_tier(leads: list[dict], columns: list[tuple[str, str]], stem: str) -> dict:
-    """Write <stem>_A.csv/_B.csv/_C.csv via export.write_csv; return {tier: path}."""
+    """Write <stem>_A.csv/_B.csv/_C.csv; return {tier: path}.
+
+    These split files preserve the caller's column order. The main exporter may
+    use contact-first ordering, but this legacy format is also a public API.
+    """
     out: dict[str, str] = {}
     for tier in ("A", "B", "C"):
         rows = [r for r in leads if r.get("tier") == tier]
         path = f"{stem}_{tier}.csv"
-        write_csv(rows, columns, path)
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([header for header, _ in columns])
+            for record in rows:
+                writer.writerow([
+                    json.dumps(record.get(key), ensure_ascii=False, sort_keys=True)
+                    if isinstance(record.get(key), (dict, list, tuple, set))
+                    else ("" if record.get(key) is None else record.get(key))
+                    for _, key in columns
+                ])
         out[tier] = path
     return out
 

@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import os
 import re
+import ipaddress
+import socket
 import time
 from typing import Optional
-from urllib.parse import urlparse, unquote
+from urllib.parse import urljoin, urlparse, unquote
 
 import requests
 
@@ -19,6 +21,8 @@ UA = os.environ.get(
     "LeadGen/1.0 (+https://github.com/Dukotah/leadgen; lead-gen research tool)",
 )
 AUDIT_TIMEOUT = 6
+MAX_RESPONSE_BYTES = 2 * 1024 * 1024
+MAX_REDIRECTS = 5
 WEBSITE_STATUSES = (
     "NO_WEBSITE_FOUND", "VERIFIED_NO_WEBSITE", "SOCIAL_ONLY",
     "WEBSITE_BROKEN", "BASIC_WEBSITE", "OUTDATED_WEBSITE",
@@ -53,6 +57,60 @@ def hostname(url: str) -> str:
         return ""
 
 
+def _validate_public_url(url: str) -> str:
+    """Validate an audit URL and reject private, local, or non-HTTP targets."""
+    candidate = url if "://" in url else "http://" + url
+    parsed = urlparse(candidate)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Only public HTTP(S) URLs can be audited")
+    if parsed.username or parsed.password:
+        raise ValueError("URLs with embedded credentials are not allowed")
+    host = parsed.hostname.rstrip(".").lower()
+    try:
+        addresses = {
+            ipaddress.ip_address(info[4][0])
+            for info in socket.getaddrinfo(host, parsed.port or 80, type=socket.SOCK_STREAM)
+        }
+    except (OSError, ValueError):
+        raise ValueError("The website host could not be resolved")
+    if not addresses or any(
+        address.is_private or address.is_loopback or address.is_link_local
+        or address.is_multicast or address.is_reserved or address.is_unspecified
+        for address in addresses
+    ):
+        raise ValueError("Private or local website targets are not allowed")
+    return parsed.geturl()
+
+
+def _safe_get(url: str, timeout: int = AUDIT_TIMEOUT) -> "requests.Response":
+    """GET a public page with bounded redirects and response size."""
+    current = _validate_public_url(url)
+    for _ in range(MAX_REDIRECTS + 1):
+        response = requests.get(
+            current, headers={"User-Agent": UA}, timeout=timeout,
+            allow_redirects=False, stream=True,
+        )
+        if response.is_redirect or response.is_permanent_redirect:
+            location = response.headers.get("Location")
+            response.close()
+            if not location:
+                raise ValueError("Redirect did not include a destination")
+            current = _validate_public_url(urljoin(current, location))
+            continue
+        chunks = []
+        size = 0
+        for chunk in response.iter_content(chunk_size=64 * 1024):
+            size += len(chunk)
+            if size > MAX_RESPONSE_BYTES:
+                response.close()
+                raise ValueError("Website response exceeded the size limit")
+            chunks.append(chunk)
+        response._content = b"".join(chunks)
+        response.url = current
+        return response
+    raise ValueError("Too many website redirects")
+
+
 def is_weak_url(url: str) -> tuple[bool, str]:
     """(is_weak, matched_domain). Matches on host boundary, not substring, so
     "x.com" won't flag "fedex.com"."""
@@ -69,11 +127,8 @@ def fetch(url: str, timeout: int = AUDIT_TIMEOUT) -> Optional["requests.Response
     """GET a URL politely; return the Response or None on any failure."""
     if not url:
         return None
-    if not url.startswith("http"):
-        url = "http://" + url
     try:
-        return requests.get(url, headers={"User-Agent": UA},
-                            timeout=timeout, allow_redirects=True)
+        return _safe_get(url, timeout)
     except Exception:
         return None
 
@@ -137,8 +192,7 @@ def audit_website(url: str, retries: int = 1) -> dict:
     for attempt in range(retries + 1):
       try:
         t0 = time.time()
-        r = requests.get(url, headers={"User-Agent": UA},
-                         timeout=AUDIT_TIMEOUT, allow_redirects=True)
+        r = _safe_get(url, AUDIT_TIMEOUT)
         ms = int((time.time() - t0) * 1000)
         out = audit_from_html(r.text, r.url, reachable=r.status_code < 400, load_ms=ms)
         if r.status_code >= 400:
@@ -153,6 +207,9 @@ def audit_website(url: str, retries: int = 1) -> dict:
       except requests.exceptions.Timeout:
         out["error"] = "TIMEOUT"
         out["audit_notes"].append(f"Timeout (>{AUDIT_TIMEOUT}s)")
+      except ValueError as e:
+        out["error"] = "UNSAFE_URL"
+        out["audit_notes"].append(str(e))
       except Exception as e:
         out["error"] = type(e).__name__
         out["audit_notes"].append(f"Unreachable: {type(e).__name__}")
@@ -174,9 +231,7 @@ def classify_website(url: str, audit: dict | None = None) -> tuple[str, str]:
     if audit.get("error") in {"HTTP 404", "HTTP 410"}:
         return "WEBSITE_BROKEN", "; ".join(audit.get("audit_notes") or ["Permanent HTTP failure"])
     if audit.get("error") or audit.get("reachable") is False:
-        if "Repeated failure" not in "; ".join(audit.get("audit_notes") or []):
-            return "UNKNOWN", "; ".join(audit.get("audit_notes") or ["Inconclusive check"])
-        return "WEBSITE_BROKEN", "; ".join(audit.get("audit_notes") or ["Check failed"])
+        return "UNKNOWN", "; ".join(audit.get("audit_notes") or ["Inconclusive check"])
     issues = audit.get("audit_notes") or []
     if len(issues) >= 2 or not audit.get("mobile_viewport"):
         return "OUTDATED_WEBSITE", "; ".join(issues) or "Mobile usability evidence needs review."

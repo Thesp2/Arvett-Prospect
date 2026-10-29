@@ -71,6 +71,9 @@ command. No API keys or secrets are required in the image.
 - Owner/decision-maker discovery is best-effort and only uses publicly published information found on the business website. Do not treat inferred or missing values as verified.
 - Employee counts and company size are left `Unknown` unless a reliable source is available; the tool does not invent company size.
 - Website audit failures are marked for rechecking rather than treated as confirmed broken sites.
+- Website audits accept only public HTTP(S) destinations, reject private or
+  loopback hosts, cap redirects and response size, and treat transient failures
+  as inconclusive.
 - Use data sources in line with their licenses and terms. The workbook records the source record URL to support manual review.
 - Running `python gui\app.py` directly uses Flask's development server and is
   intended for local use. Container deployments use Gunicorn instead.

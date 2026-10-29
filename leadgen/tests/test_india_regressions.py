@@ -24,7 +24,8 @@ def test_indian_phone_normalization():
 def test_website_classification_is_conservative():
     assert classify_website("")[0] == "NO_WEBSITE_FOUND"
     assert classify_website("https://facebook.com/example")[0] == "SOCIAL_ONLY"
-    assert classify_website("https://example.test", {"error": "TIMEOUT"})[0] == "WEBSITE_BROKEN"
+    assert classify_website("https://example.test", {"error": "TIMEOUT"})[0] == "UNKNOWN"
+    assert classify_website("https://example.test", {"error": "HTTP 404"})[0] == "WEBSITE_BROKEN"
     assert classify_website(
         "https://example.test", {"reachable": True, "mobile_viewport": True, "audit_notes": []}
     )[0] == "FUNCTIONAL_WEBSITE"

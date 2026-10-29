@@ -118,7 +118,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
                  category_filter: str | None = None, radius_km: float | None = None,
                  out_stem: str | None = None, config_override: dict | None = None,
                  exclude_names: set | None = None, demo: bool = False,
-                 log=print) -> list[dict]:
+                 log=print, run_metadata: dict | None = None) -> list[dict]:
     """Run the full pipeline for one vertical in one market.
 
     sources: any of ("overture", "osm").
@@ -128,6 +128,8 @@ def run_pipeline(vertical: Vertical, market: str, *,
     config_override: shallow-merged over the vertical's config for THIS run only
                      (e.g. competitor seed URLs typed into the GUI). The shared
                      vertical object is never mutated.
+    run_metadata: optional per-run dictionary populated with output paths and
+                  statistics, avoiding shared module state for concurrent jobs.
     exclude_names: normalized company names to drop (e.g. the user's existing CRM)
                    — see load_crm_names(). Matches are removed, not just flagged.
     demo: if True, use bundled offline sample data + fixture enrichment (no network).
@@ -135,7 +137,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
     are attached as run_pipeline.last_outputs = (csv_path, xlsx_path).
     """
     run_pipeline.last_outputs = None
-    run_pipeline.last_stats = {
+    stats = {
         "target_market": market, "radius_km": radius_km,
         "raw_records": 0, "geographic_rejected": 0, "duplicates_removed": 0,
         "category_excluded": 0, "enrichment": {},
@@ -235,7 +237,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
                 r["geographic_match"] = "UNKNOWN"
                 r["geographic_match_confidence"] = "No valid coordinates"
                 r["excluded_reason"] = "Missing or invalid coordinates for radius check"
-                run_pipeline.last_stats["geographic_rejected"] += 1
+                stats["geographic_rejected"] += 1
                 continue
             distance = haversine_m(center["lat"], center["lon"], r["lat"], r["lon"]) / 1000
             r["distance_km"] = round(distance, 3)
@@ -243,8 +245,8 @@ def run_pipeline(vertical: Vertical, market: str, *,
             r["geographic_match_confidence"] = "Coordinate distance"
             if distance > radius_km:
                 r["excluded_reason"] = f"Outside requested radius ({distance:.2f} km)"
-                run_pipeline.last_stats["geographic_rejected"] += 1
-        log(f"  radius filter {radius_km:g} km: kept {before - run_pipeline.last_stats['geographic_rejected']} of {before}")
+                stats["geographic_rejected"] += 1
+        log(f"  radius filter {radius_km:g} km: kept {before - stats['geographic_rejected']} of {before}")
 
     # Apply the requested business group before enrichment so irrelevant sites are not visited.
     if category_filter and category_filter != "all":
@@ -253,7 +255,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
             if not _matches_business_category(r, category_filter):
                 r["excluded_reason"] = f"Category does not match '{category_filter}'"
                 r["category_excluded"] = True
-                run_pipeline.last_stats["category_excluded"] += 1
+                stats["category_excluded"] += 1
         # Keep excluded records for the All Businesses sheet and manual review.
         log(f"  category filter '{category_filter}': retained {len(leads)} with exclusions from {before}")
     for r in leads:
@@ -261,7 +263,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
         if reason:
             r["category_excluded"] = True
             r["excluded_reason"] = reason
-            run_pipeline.last_stats["category_excluded"] += 1
+            stats["category_excluded"] += 1
 
     # Preserve the user's target market separately from source-provided address fields.
     for r in leads:
@@ -307,16 +309,16 @@ def run_pipeline(vertical: Vertical, market: str, *,
             r["original_phone"] = r.get("original_phone") or r["phone"]
             r["normalized_phone"] = normalize_phone(r["phone"], default_country="IN")
             r["phone"] = r["normalized_phone"] or r["phone"]
-    run_pipeline.last_stats["raw_records"] = len(leads)
-    run_pipeline.last_stats["sources_attempted"] = attempted_sources
-    run_pipeline.last_stats["sources_succeeded"] = successful_sources
-    run_pipeline.last_stats["source_failures"] = [
+    stats["raw_records"] = len(leads)
+    stats["sources_attempted"] = attempted_sources
+    stats["sources_succeeded"] = successful_sources
+    stats["source_failures"] = [
         {"source": name, "error": str(error)} for name, error in source_failures
     ]
     log(f"Collected {len(leads)} raw; deduping across sources…")
     before_dedupe = len(leads)
     leads = cross_source_dedupe(leads)
-    run_pipeline.last_stats["duplicates_removed"] = before_dedupe - len(leads)
+    stats["duplicates_removed"] = before_dedupe - len(leads)
     log(f"  {len(leads)} after dedupe")
     # 1a. drop businesses already in the user's CRM (never hand back a dupe)
     if exclude_names:
@@ -361,7 +363,7 @@ def run_pipeline(vertical: Vertical, market: str, *,
         targets = candidates if enrich_cap is None else candidates[:enrich_cap]
         log(f"Enriching {len(targets)} businesses (parallel)…")
         enrich_stats = {}
-        run_pipeline.last_stats["enrichment"] = enrich_stats
+        stats["enrichment"] = enrich_stats
         ctx = {"config": cfg, "stats": enrich_stats}
         with ThreadPoolExecutor(max_workers=8) as ex:
             futs = {ex.submit(vertical.enrich_fn, r, ctx): r for r in targets}
@@ -424,6 +426,11 @@ def run_pipeline(vertical: Vertical, market: str, *,
         import os
         d, base = os.path.split(out_stem)
         stem = os.path.join(d, re.sub(r"[^a-z0-9]+", "_", base.lower()).strip("_"))
-        run_pipeline.last_outputs = write_outputs(leads, vertical.columns, stem, log)
+        outputs = write_outputs(leads, vertical.columns, stem, log)
+        run_pipeline.last_outputs = outputs
+        if run_metadata is not None:
+            run_metadata["outputs"] = outputs
+            run_metadata["stats"] = dict(stats)
 
+    run_pipeline.last_stats = stats
     return leads
