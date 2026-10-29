@@ -1,6 +1,6 @@
-# Arvett LeadFinder
+# Arvett Prospect
 
-Local-first business prospect research for Arvett. The first version focuses on discovering local businesses that may benefit from a new website or redesign, reviewing the evidence, and exporting an Excel workbook.
+Local-first business prospect research for **Arvett**. Arvett Prospect focuses on discovering local businesses that may benefit from a new website or redesign, reviewing the evidence, and exporting an Excel workbook.
 
 ## Current MVP
 
@@ -88,3 +88,16 @@ Generated files are written under `gui/_output/`. The Excel workbook is the main
 python -m compileall gui leadgen
 python -m unittest leadgen.tests.test_arvett_mvp -v
 ```
+
+## Arvett Prospect UI tokens
+
+- **Color:** dark navy `#11161d`, panel `#1a212b`, light surface `#fafbfc`,
+  electric blue accent `#7fb6e6`, green success `#3fbf5f`.
+- **Type:** system UI stack with compact 12–14px supporting text and 22–24px
+  result metrics.
+- **Spacing:** 8px control rhythm, 14–16px field gaps, 18px mobile page
+  padding.
+- **Radii:** 8px controls, 10–12px panels, pill badges only for statuses and
+  compact tags.
+- **Motion:** one indeterminate progress sweep, disabled when
+  `prefers-reduced-motion` is enabled.

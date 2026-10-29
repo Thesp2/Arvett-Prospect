@@ -287,7 +287,7 @@ def free_port(default=5000):
 
 
 INDEX_HTML = """<!doctype html><html><head><meta charset="utf-8">
-<title>Arvett LeadFinder</title>
+<title>Arvett Prospect · Arvett</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root{--blue:#1F4E78;--green:#28a745;
@@ -301,7 +301,7 @@ html[data-theme=dark]{--blue:#5a9bd8;--green:#3fbf5f;--accent:#7fb6e6;
 *{box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;
   max-width:1080px;margin:0 auto;padding:24px 18px;color:var(--fg);background:var(--bg)}
-h1{margin:0 0 2px;letter-spacing:-.02em}.sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+h1{margin:0 0 2px;letter-spacing:-.02em;color:var(--fg)}.sub{color:var(--muted);margin:0 0 18px;font-size:14px}
 body:before{content:"LOCAL APPLICATION";display:inline-block;color:var(--accent);font-size:10px;
   letter-spacing:.12em;font-weight:700;margin-bottom:7px}
 *:focus-visible{outline:3px solid rgba(90,155,216,.55);outline-offset:2px}
@@ -310,12 +310,18 @@ legend{padding:0 8px;font-weight:650;color:var(--accent)}
 .opt{font-weight:400;color:var(--muted2);font-size:12px}
 .firsttime{background:#eaf4ff;border:1px solid #bcdcff;border-radius:9px;padding:11px 14px;margin-bottom:16px;font-size:13.5px;line-height:1.5;color:#1d2733}
 html[data-theme=dark] .firsttime{background:#16314a;border-color:#27496b;color:#cfe2f5}
-details.adv{border:1px solid var(--border2);border-radius:9px;background:var(--panel);padding:6px 14px;margin:0 0 16px}
-details.adv>summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:13.5px;padding:6px 0}
+details.adv{border:1px solid var(--border2);border-radius:12px;background:var(--panel);padding:0 16px;margin:0 0 16px;box-shadow:0 2px 8px rgba(20,40,70,.04)}
+details.adv>summary{cursor:pointer;list-style:none;font-weight:700;color:var(--fg);font-size:13.5px;padding:14px 0;display:flex;align-items:center;gap:9px}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv>summary:before{content:"＋";width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--field-border);border-radius:6px;color:var(--accent);font-size:16px}
+details.adv[open]>summary:before{content:"−"}
 .legend{display:none;margin-top:10px;font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--border2);border-radius:9px;padding:10px 13px;line-height:1.6}
 label.fld{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;color:var(--muted)}
 input[type=text],input[type=number],select,textarea{
-  width:100%;padding:9px 10px;font-size:14px;border:1px solid var(--field-border);border-radius:7px;font-family:inherit;background:var(--panel);color:var(--fg)}
+  width:100%;padding:10px 11px;font-size:14px;border:1px solid var(--field-border);border-radius:8px;font-family:inherit;background:var(--panel);color:var(--fg);color-scheme:light}
+html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] textarea{color-scheme:dark}
+input::placeholder,textarea::placeholder{color:var(--muted2);opacity:1}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 textarea{resize:vertical;min-height:74px}
 .row{display:flex;gap:14px;flex-wrap:wrap}.row>div{flex:1;min-width:220px}
 .hint{color:var(--muted2);font-size:12px;margin-top:4px}
@@ -342,9 +348,10 @@ input[type=file]{font-size:13px}
 #status{display:none;margin-top:8px;background:var(--code-bg);color:var(--code-fg);border-radius:9px;
   padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
   max-height:260px;overflow:auto;white-space:pre-wrap;line-height:1.5}
-#summary{display:none;margin-top:14px;gap:10px}
+#summary{display:none;margin-top:14px;gap:8px}
 .stat{flex:1;text-align:center;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px;box-shadow:0 2px 8px rgba(20,40,70,.05)}
-.stat b{display:block;font-size:24px}.stat.A b{color:var(--green)}.stat.B b{color:#c79100}.stat.C b{color:#b04a52}
+.stat b{display:block;font-size:22px}.stat small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.stat.A b{color:var(--green)}.stat.B b{color:#c79100}.stat.C b{color:#b04a52}
+@media(max-width:700px){ #summary{display:grid!important;grid-template-columns:repeat(2,1fr)}}
 #dls{display:none;margin-top:12px;gap:10px}
 a.dl{display:inline-block;padding:10px 16px;background:var(--green);color:#fff;text-decoration:none;border-radius:8px;font-weight:600}
 a.dl.alt{background:#34507a}
@@ -366,6 +373,8 @@ tr.tagged-not_interested td{box-shadow:inset 4px 0 0 0 #b04a52;opacity:.6}
 #themetoggle:hover{background:var(--ghosthover);filter:none}
 .resulttools{display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
 .resulttools button{padding:7px 13px;font-size:13px}
+.resultfilters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.resultfilters input,.resultfilters select{width:auto;min-width:150px;padding:8px 10px}
 .cellbtn{background:none;border:1px solid var(--field-border);color:var(--accent);
   padding:1px 5px;font-size:11px;border-radius:5px;cursor:pointer;font-weight:600;margin-left:4px;vertical-align:middle}
 .cellbtn:hover{background:var(--ghosthover);filter:none}
@@ -411,6 +420,20 @@ details.settings>summary{cursor:pointer;font-weight:600;color:var(--accent);font
 #runmeter .chip{background:var(--panel);border:1px solid var(--border);border-radius:20px;
   padding:4px 11px;font-size:12.5px;color:var(--fg)}
 #runmeter .chip b{color:var(--accent)}
+#progressbox{display:none;margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+#progressbox .phase{font-size:13px;font-weight:700;color:var(--fg)}
+#progressbar{height:7px;background:var(--th);border-radius:99px;overflow:hidden;margin-top:9px}
+#progressbar span{display:block;width:35%;height:100%;background:var(--accent);border-radius:99px;animation:progress-sweep 1.4s ease-in-out infinite}
+@keyframes progress-sweep{0%{transform:translateX(-130%)}100%{transform:translateX(310%)}}
+@media (prefers-reduced-motion:reduce){ #progressbar span{animation:none;width:100%}}
+#category_picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:4px 0}
+#category_picker label{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--fg);font-size:12px;cursor:pointer}
+#category_picker label:has(input:checked){border-color:var(--accent);background:var(--th);color:var(--accent);font-weight:700}
+#category_picker input{accent-color:var(--accent)}
+@media(max-width:620px){body{padding:18px 12px}.row>div{min-width:100%}#category_picker{grid-template-columns:1fr}#themetoggle{position:absolute;top:10px;right:10px}.btnrow button{flex:1;min-width:0}}
+.drawerbackdrop{display:none;position:fixed;inset:0;background:rgba(3,8,15,.55);z-index:80}
+.drawer{position:absolute;right:0;top:0;height:100%;width:min(460px,100%);overflow:auto;background:var(--panel);border-left:1px solid var(--border);padding:24px;box-shadow:-12px 0 35px rgba(0,0,0,.2)}
+.drawer h2{margin:0 36px 4px 0;font-size:21px}.drawer h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 7px}.drawer p{margin:5px 0;color:var(--fg);font-size:13px;line-height:1.55}.drawerclose{position:absolute;right:18px;top:18px;padding:5px 9px}.drawergrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.drawergrid div{padding:9px;border:1px solid var(--border);border-radius:8px}.drawergrid b{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}.drawergrid span{font-size:13px}.draweropen{cursor:pointer}
 #runtimer{font-size:12.5px;color:var(--muted2);font-weight:600}
 /* Arvett MVP: keep the interface focused; unused legacy controls remain hidden for compatibility. */
 #settingswrap,#recentwrap,#queuewrap,#competitor_box,#crm_box,#check,#enqueue{display:none!important}
@@ -426,10 +449,23 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
 #tourcard button{padding:6px 14px;font-size:13px}
 #tourcard button.tskip{background:none;color:var(--muted);border:none;padding:6px 4px;font-weight:600}
 .tourhi{position:relative;z-index:101;box-shadow:0 0 0 3px var(--blue),0 0 0 9px rgba(31,78,120,.3);border-radius:8px}
+/* Product system: quiet graphite, crisp type, one electric-blue action. */
+:root{--bg:#f5f7fa;--fg:#17212d;--panel:#fff;--border:#dce3eb;--border2:#e5eaf0;--muted:#586779;--muted2:#748295;--field-border:#c8d1dc;--th:#f0f3f7;--accent:#285d91;--blue:#285d91;--green:#26734d;--ghosthover:#edf2f8;--code-bg:#111923;--code-fg:#d4e3f2;color-scheme:light}
+html[data-theme=dark]{--bg:#0d1218;--fg:#e7edf4;--panel:#151c24;--border:#2a3541;--border2:#26313c;--muted:#a4b0bd;--muted2:#8391a0;--field-border:#394653;--th:#1d2731;--accent:#74b4f1;--blue:#347fc0;--green:#72c59a;--ghosthover:#202b36;--code-bg:#090e13;--code-fg:#c3d9ed;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{max-width:1240px;padding:0 28px 64px;font-family:Inter,Geist,"Segoe UI",sans-serif;line-height:1.5;background:var(--bg)}body:before{display:none}body>button#themetoggle{display:none}
+.appbar{height:62px;display:flex;align-items:center;border-bottom:1px solid var(--border);gap:22px;margin-bottom:34px}.brand{display:flex;align-items:center;gap:8px;color:var(--fg);text-decoration:none;font-size:17px;font-weight:750;letter-spacing:-.045em}.brandmark{display:grid;place-items:center;width:25px;height:25px;background:#285d91;color:#fff;border-radius:6px;font-size:14px;font-weight:800}.brand i{height:18px;border-left:1px solid var(--border);margin:0 3px}.brand b{font-size:13px;letter-spacing:0;color:var(--muted);font-weight:600}.context{font-size:12px;color:var(--muted2)}.context span{padding:0 6px;color:var(--border)}#themetoggle2{margin-left:auto;position:static;padding:7px 10px;border-radius:7px;font-size:12px;font-weight:600;background:var(--panel);color:var(--fg);border:1px solid var(--border)}
+.workspace{max-width:1080px;margin:0 auto}.pageintro{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:21px}.eyebrow{font-size:10px;font-weight:750;letter-spacing:.12em;color:var(--muted2);margin:0 0 7px}.eyebrow span{color:var(--accent)}h1{font-size:27px;line-height:1.2;letter-spacing:-.04em;margin:0 0 7px;font-weight:670}.sub{font-size:13px;max-width:710px;line-height:1.55;margin:0;color:var(--muted)}.workflow{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:11px;color:var(--muted2);padding-bottom:5px}.workflow b{display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid var(--border);border-radius:50%;margin-right:5px;font-size:10px}.workflow .current{color:var(--accent);font-weight:650}.workflow .current b{background:var(--accent);color:#fff;border-color:var(--accent)}.connector{width:30px;border-top:1px solid var(--border)}
+#form{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);gap:12px}fieldset{min-width:0;border:1px solid var(--border);border-radius:9px;margin:0;padding:13px 15px 15px;box-shadow:0 2px 7px rgba(9,20,35,.025)}#form>fieldset:first-of-type{grid-column:1}#form>fieldset:nth-of-type(2){grid-column:2;grid-row:1 / span 2}#form>details.adv,#form>.btnrow,#form>#checkout,#form>#runmeter,#form>#progressbox{grid-column:1 / -1}legend{font-size:12px;letter-spacing:.01em;padding:0 7px;color:var(--fg)}.stepnum{font-size:10px;letter-spacing:.08em;color:var(--accent);margin-right:5px}.fld{font-size:11.5px;margin:6px 0 4px;color:var(--muted);font-weight:650}input[type=text],input[type=number],select,textarea{border:1px solid var(--field-border);border-radius:6px;padding:9px 10px;font-size:13px;background:var(--panel)}input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}.hint{font-size:11px;line-height:1.5;color:var(--muted2)}.vdesc{font-size:11.5px}.featurelist{gap:5px}.featurelist span{font-size:10.5px;padding:3px 7px;border-radius:5px}.intent-note{margin-top:7px}.row{gap:11px}.row>div{min-width:150px}#form>fieldset:nth-of-type(2) .row{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}#form>fieldset:nth-of-type(2) .row>div{min-width:0}#category_picker{grid-template-columns:1fr;gap:3px;max-height:220px;overflow:auto;border:1px solid var(--border2);border-radius:6px;padding:4px}#category_picker label{border:0;border-radius:4px;padding:5px 6px;font-size:11.5px;background:transparent;min-height:30px}#category_picker label:has(input:checked){background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--fg)}#category_picker input{width:14px;height:14px;accent-color:var(--accent)}.selectedcount{font-size:10px;color:var(--accent);font-weight:600;margin-left:5px}.textbutton{background:none;border:0;padding:0;color:var(--accent);font-size:10px;font-weight:600;margin-left:8px;text-decoration:underline;text-underline-offset:2px}.checks label{font-size:11.5px;display:flex;align-items:center;gap:6px;margin:5px 0}.checks input{accent-color:var(--accent)}
+details.adv{border:1px solid var(--border);border-radius:8px;padding:0 13px;margin:0;background:var(--panel);box-shadow:none}details.adv>summary{font-size:12px;padding:10px 0}details.adv>summary:before{width:19px;height:19px;font-size:13px;border-radius:5px}.opt{margin-left:auto;font-size:10.5px;font-weight:450}.btnrow{margin:0;justify-content:space-between;padding:2px 1px}.btnrow button{font-size:12px;padding:9px 14px;border-radius:6px}.btnrow #go{font-size:13px;padding:11px 20px;min-width:190px;box-shadow:0 2px 4px rgba(20,67,110,.16)}.btnrow #go span{margin-left:12px;font-size:16px}.btnrow .ghost{border-width:1px;font-size:11px;padding:8px 11px}.btnrow #check,.btnrow #enqueue{display:none!important}.field-error{color:#d05255;font-size:11px;margin-top:4px}.field-invalid{border-color:#d05255!important}.banner{font-size:12px;padding:10px 12px;border-radius:7px}.banner.good{background:color-mix(in srgb,#26734d 12%,var(--panel));color:var(--fg)}.banner.warn{background:color-mix(in srgb,#bd8521 13%,var(--panel));color:var(--fg)}.banner.bad{background:color-mix(in srgb,#bf4545 12%,var(--panel));color:var(--fg)}
+#progressbox{padding:13px 15px;border-radius:8px}.progresshead{display:flex;align-items:center;justify-content:space-between}.phase{margin-top:2px}.progressstate{font-size:11px;color:var(--accent);font-weight:650}.progressstate i{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:5px}.progressstate.failed{color:#d05255}.stat{border-radius:7px;box-shadow:none;padding:11px}.stat b{font-size:20px}.stat small{font-size:10px;color:var(--muted)}#summary{gap:8px;margin-top:20px}.stat.A b,.stat.B b,.stat.C b{color:var(--accent)}.tablewrap{border-radius:7px;max-height:62vh}.tablewrap table{font-size:11.5px}.tablewrap th{top:0;z-index:2}.tablewrap th,.tablewrap td{padding:8px 9px;border-width:0 0 1px 0}.tablewrap tr:hover td{background:color-mix(in srgb,var(--accent) 5%,var(--panel))}.resultfilters{gap:6px}.resultfilters input,.resultfilters select{font-size:11px;min-width:130px;padding:7px 8px;border-radius:6px}.resulttools button{font-size:11px;padding:7px 9px;border-radius:6px}.statusbadge{font-size:10px;border-radius:4px;padding:2px 5px}.drawer{padding:26px;width:min(440px,100%)}.drawer h2{font-size:19px}.drawer h3{letter-spacing:.06em}.drawergrid div{border-radius:6px}
+@media(max-width:820px){body{padding:0 18px 48px}.pageintro{align-items:flex-start;flex-direction:column;gap:12px}.workflow{padding-bottom:0}#form{grid-template-columns:1fr 1fr}#form>fieldset:first-of-type{grid-column:1}#form>fieldset:nth-of-type(2){grid-column:2;grid-row:1 / span 2}#form>fieldset:nth-of-type(2) .row{grid-template-columns:1fr}.featurelist{flex-wrap:wrap}}
+@media(max-width:600px){body{padding:0 13px 36px}.appbar{height:54px;margin-bottom:22px;gap:10px}.context{display:none}.brand{font-size:15px}h1{font-size:23px}.sub{font-size:12px}.workflow{font-size:10px}#form{grid-template-columns:1fr;gap:9px}#form>fieldset:first-of-type,#form>fieldset:nth-of-type(2){grid-column:1;grid-row:auto}#form>fieldset:nth-of-type(2) .row{grid-template-columns:1fr 1fr}#form>fieldset:nth-of-type(2) .row>div:nth-child(2){grid-column:1/-1;grid-row:2}#form>fieldset:nth-of-type(2) .row>div:nth-child(3){grid-column:1;grid-row:3}#form>fieldset:nth-of-type(2) .row>div:nth-child(4){grid-column:2;grid-row:3}.btnrow{gap:8px}.btnrow #go{flex:1;min-width:100%}.btnrow .ghost{display:none!important}#summary{grid-template-columns:repeat(2,1fr)}.resultfilters input,.resultfilters select{width:100%;min-width:0}.tablewrap{overflow:auto}.tablewrap table{min-width:850px}.drawergrid{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+#activefilters{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}#activefilters:empty{display:none}.filterchip{background:var(--th);border:1px solid var(--border);color:var(--muted);padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer}.filterchip:hover{color:var(--fg);border-color:var(--accent)}.notfound{color:var(--muted2);font-size:10.5px}#resultsheading{display:none;align-items:end;margin:26px 0 11px;border-bottom:1px solid var(--border);padding-bottom:10px}#resultsheading h2{font-size:18px;letter-spacing:-.025em;margin:0 0 2px}#resultsheading .eyebrow{margin:0 0 3px;color:var(--accent)}#resultsheading .hint{margin:0}
 </style></head><body>
 <button id="themetoggle" type="button" title="Toggle dark mode">🌙 Dark</button>
-<h1>Arvett LeadFinder</h1>
-<p class="sub">Discover better website-development opportunities.</p>
+<header class="appbar"><a class="brand" href="/" aria-label="Arvett Prospect home"><span class="brandmark">A</span><span>arvett</span><i></i><b>Prospect</b></a><span class="context">Local business intelligence <span>/</span> New search</span><button id="themetoggle2" type="button" title="Toggle color theme" aria-label="Toggle color theme">Light theme</button></header>
+<main class="workspace"><div class="pageintro"><div><p class="eyebrow">PROSPECTING WORKSPACE <span>·</span> 01 / SEARCH</p><h1>Find your next web development client.</h1><p class="sub">Discover local businesses with potential website opportunities, verify their digital presence, and build an actionable prospect list.</p></div><div class="workflow" aria-label="Workflow"><span class="current"><b>1</b> Configure search</span><span class="connector"></span><span><b>2</b> Review prospects</span></div></div>
 
 <details class="adv settings" id="settingswrap">
   <summary>⚙ Settings &amp; defaults</summary>
@@ -439,9 +475,6 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
       <div class="setchecks" id="set_sources">
         <label><input type="checkbox" data-src="overture"> Nationwide business directory</label>
         <label><input type="checkbox" data-src="osm"> Live map data</label>
-        <label><input type="checkbox" data-src="socrata"> New-business records (open data)</label>
-        <label><input type="checkbox" data-src="npi"> Healthcare providers (NPI)</label>
-        <label><input type="checkbox" data-src="foursquare"> Foursquare (deep · slow)</label>
       </div>
       <div class="hint">Applied to the run form when you open the page. Picking a vertical may still override these.</div>
     </div>
@@ -469,38 +502,37 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
 
 <form id="form">
   <fieldset>
-    <legend>1 · What kind of leads?</legend>
+    <legend><span class="stepnum">01</span> Opportunity type</legend>
     <label class="fld">Type of business to find</label>
     <select id="vertical"></select>
-    <div class="featurelist" aria-label="Website opportunity types">
-      <span>No website</span><span>Social-only presence</span><span>Weak or outdated website</span>
-    </div>
+    <div class="featurelist" aria-label="Search targets"><span>No website</span><span>Social-only presence</span><span>Weak or outdated website</span><span>Combined opportunity</span></div>
+    <p class="hint intent-note">These are search targets. Website status is verified during research.</p>
     <div class="vdesc" id="vdesc"></div>
   </fieldset>
 
   <fieldset>
-    <legend>2 · Where should we look?</legend>
+    <legend><span class="stepnum">02</span> Location, coverage &amp; category</legend>
     <div class="row">
       <div>
-        <label class="fld">Area</label>
-        <input type="text" id="market" list="markets" placeholder="e.g. Mehsana, Gujarat, India">
+        <label class="fld" for="market">Location</label>
+        <input type="text" id="market" list="markets" placeholder="Mehsana, Gujarat, India" autocomplete="off" aria-describedby="market_hint market_error" required>
         <datalist id="markets">{% for m in markets %}<option value="{{m}}">{% endfor %}</datalist>
-        <div class="hint">Enter a specific city, state, and country, e.g. “Mehsana, Gujarat, India”.</div>
+        <div class="hint" id="market_hint">Use the most specific place available. We resolve it before collecting businesses.</div><div class="field-error" id="market_error" role="alert"></div>
       </div>
       <div>
-        <label class="fld">Business category</label>
-        <select id="category_filter" multiple size="4">
-          <option value="all">All local businesses</option>
-          <option value="food">Restaurants, cafes and food</option>
-          <option value="retail">Retail and shops</option>
-          <option value="healthcare">Clinics and healthcare</option>
-          <option value="professional">IT, offices and professional services</option>
-          <option value="automotive">Automotive services</option>
-          <option value="hospitality">Hotels and accommodation</option>
-          <option value="fitness">Fitness and sports</option>
-          <option value="beauty">Beauty and personal care</option>
-        </select>
-        <div class="hint">Use Ctrl-click to select multiple groups. Leave All selected for a broad search.</div>
+        <label class="fld">Business category <span class="selectedcount" id="category_count">1 selected</span><button type="button" class="textbutton" id="clear_categories">Clear all</button></label>
+        <div id="category_picker" role="group" aria-label="Business categories">
+          <label><input type="checkbox" name="category" value="all" checked> All local businesses</label>
+          <label><input type="checkbox" name="category" value="food"> Restaurants, cafes and food</label>
+          <label><input type="checkbox" name="category" value="retail"> Retail and shops</label>
+          <label><input type="checkbox" name="category" value="healthcare"> Clinics and healthcare</label>
+          <label><input type="checkbox" name="category" value="professional"> IT, offices and professional services</label>
+          <label><input type="checkbox" name="category" value="automotive"> Automotive services</label>
+          <label><input type="checkbox" name="category" value="hospitality"> Hotels and accommodation</label>
+          <label><input type="checkbox" name="category" value="fitness"> Fitness and sports</label>
+          <label><input type="checkbox" name="category" value="beauty"> Beauty and personal care</label>
+        </div>
+        <div class="hint">Choose one or more groups. “All local businesses” clears other selections.</div>
       </div>
       <div>
         <label class="fld">Search radius</label>
@@ -518,9 +550,6 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
         <div class="checks" style="padding-top:8px">
           <label><input type="checkbox" id="src_overture"> Overture Maps (optional broader coverage)</label>
           <label><input type="checkbox" id="src_osm" checked> OpenStreetMap (recommended free source)</label>
-          <label><input type="checkbox" id="src_socrata"> New-business records (open data)</label>
-          <label><input type="checkbox" id="src_npi"> Healthcare providers (NPI)</label>
-          <label><input type="checkbox" id="src_foursquare"> Foursquare (deep · slow ~1–2 min)</label>
         </div>
         <div class="hint">Start with OpenStreetMap. Overture is optional and can be slower. Source coverage varies by area.</div>
       </div>
@@ -570,6 +599,11 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
     <span id="runtimer">⏱ 0:00</span>
     <span id="runchips"></span>
   </div>
+  <div id="progressbox" role="status" aria-live="polite">
+    <div class="phase" id="runphase">Preparing your search…</div>
+    <div id="progressbar" aria-hidden="true"><span></span></div>
+    <div class="hint">Progress updates reflect completed pipeline stages; website checks may take longer.</div>
+  </div>
 </form>
 
 <details class="adv settings" id="queuewrap" style="display:none">
@@ -582,11 +616,13 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
   </div>
 </details>
 
+<div id="resultsheading"><div><p class="eyebrow">02 / REVIEW</p><h2>Prospect workspace</h2><p class="hint">Review the evidence, refine your list, then export the prospects that fit.</p></div></div>
 <div id="summary" class="row">
-  <div class="stat"><b id="s_total">0</b>businesses discovered</div>
-  <div class="stat A"><b id="s_A">0</b>high opportunity</div>
-  <div class="stat B"><b id="s_contact">0</b>usable contact</div>
-  <div class="stat C"><b id="s_review">0</b>needs review</div>
+  <div class="stat" title="Records returned after collection and deduplication"><b id="s_total">0</b><small>Businesses collected</small></div>
+  <div class="stat A" title="Records with a high research-priority grade"><b id="s_A">0</b><small>High opportunity</small></div>
+  <div class="stat B" title="Records with a website opportunity status"><b id="s_opportunity">0</b><small>Website opportunities</small></div>
+  <div class="stat" title="Records with a public phone or email"><b id="s_contact">0</b><small>Contactable leads</small></div>
+  <div class="stat C" title="Records needing manual review or with inconclusive evidence"><b id="s_review">0</b><small>Inconclusive / review</small></div>
 </div>
 <div id="dls" class="row"></div>
 <div id="legend" class="legend"></div>
@@ -594,7 +630,16 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
   <div id="status"></div>
 </details>
 <div id="resultsearch">
-  <input type="text" id="r_filter" placeholder="Filter these results… (name, city, why a lead, pitch)">
+  <div class="resultfilters">
+    <input type="search" id="r_filter" aria-label="Search prospects" placeholder="Search business, city, reason…">
+    <select id="r_category" aria-label="Filter by category"><option value="">All categories</option></select>
+    <select id="r_location" aria-label="Filter by location"><option value="">All locations</option></select>
+    <select id="r_status" aria-label="Filter by website status"><option value="">All website statuses</option></select>
+    <select id="r_grade" aria-label="Filter by opportunity grade"><option value="">All grades</option><option value="A">Grade A</option><option value="B">Grade B</option><option value="C">Grade C</option></select>
+    <select id="r_contact" aria-label="Filter by contact availability"><option value="">Any contact</option><option value="yes">Phone or email found</option><option value="no">No phone or email</option></select>
+    <button type="button" class="ghost" id="r_clear">Clear filters</button>
+  </div>
+  <div id="activefilters" aria-live="polite"></div>
 </div>
 <div class="resulttools" id="resulttools">
   <span id="colmenu">
@@ -605,6 +650,18 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
   <span class="hint" id="exportcount"></span>
 </div>
 <div class="tablewrap" id="tablewrap"><table id="preview"></table></div>
+<div class="drawerbackdrop" id="drawerbackdrop" aria-hidden="true">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawertitle">
+    <button type="button" class="ghost drawerclose" id="drawerclose" aria-label="Close prospect details">×</button>
+    <h2 id="drawertitle">Prospect details</h2>
+    <p id="drawersubtitle" class="hint"></p>
+    <div class="drawergrid" id="drawergrid"></div>
+    <h3>Qualification reason</h3><p id="drawerwhy">Not verified</p>
+    <h3>Website evidence</h3><p id="drawerevidence">Not checked</p>
+    <h3>Source attribution</h3><p id="drawersource">Not available</p>
+    <h3>Suggested next action</h3><p id="draweraction">Review the available evidence before contacting.</p>
+  </aside>
+</div>
 
 <div id="tour">
   <div id="tourcard">
@@ -618,17 +675,18 @@ label:has(#src_socrata),label:has(#src_npi),label:has(#src_foursquare){display:n
   </div>
 </div>
 
+ </main>
 <script>
 // ── Dark mode: respect prefers-color-scheme on first load, persist choice. ──
 (function(){
-  const tog=document.getElementById("themetoggle");
+  const tog=document.getElementById("themetoggle2");
   function apply(t){
     document.documentElement.setAttribute("data-theme", t);
     tog.textContent = t==="dark" ? "☀️ Light" : "🌙 Dark";
   }
   let saved=null; try{ saved=localStorage.getItem("leadgen_theme"); }catch(e){}
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  apply(saved || (prefersDark ? "dark" : "light"));
+  apply(saved || "dark");
   tog.addEventListener("click", ()=>{
     const next = document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark";
     apply(next); try{ localStorage.setItem("leadgen_theme", next); }catch(e){}
@@ -659,7 +717,13 @@ const checkout=document.getElementById("checkout");
 const statusEl=document.getElementById("status"), summary=document.getElementById("summary");
 const logwrap=document.getElementById("logwrap"), legend=document.getElementById("legend");
 const dls=document.getElementById("dls"), tablewrap=document.getElementById("tablewrap"), table=document.getElementById("preview");
-const GO_LABEL="🔍 Find leads";
+const progressbox=document.getElementById("progressbox"), runphase=document.getElementById("runphase");
+const GO_LABEL="Find prospects →";
+go.textContent=GO_LABEL;
+let logPinned=true;
+statusEl.addEventListener("scroll", ()=>{
+  logPinned=statusEl.scrollHeight-statusEl.scrollTop-statusEl.clientHeight<24;
+});
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;"}[c])); }
 
@@ -678,7 +742,7 @@ document.getElementById("crm_file").addEventListener("change", e=>{
 function baseBody(){
   const sources=[]; if(document.getElementById("src_osm").checked) sources.push("osm");
   if(document.getElementById("src_overture").checked) sources.push("overture");
-  const categories=[...document.getElementById("category_filter").selectedOptions].map(o=>o.value);
+  const categories=[...document.querySelectorAll("#category_picker input[name=category]:checked")].map(o=>o.value);
   return {
     vertical:vsel.value, market:document.getElementById("market").value,
     category_filter:categories.includes("all")||!categories.length?"all":categories.join(","),
@@ -697,11 +761,20 @@ async function startRun(body){
   lastBody=body;
   go.disabled=true; go.textContent="Working…";
   logwrap.style.display="block"; statusEl.style.display="block"; statusEl.textContent="Starting…"; checkout.innerHTML="";
+  progressbox.style.display="block"; runphase.textContent="Preparing your search…";
   summary.style.display="none"; dls.style.display="none"; legend.style.display="none";
   tablewrap.style.display="none"; table.style.display="none";
   startMeter();
-  const r=await fetch("/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-  const j=await r.json();
+  let j;
+  try{
+    const r=await fetch("/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    j=await r.json();
+    if(!r.ok) throw new Error(j.error||"Could not start the search.");
+  }catch(error){
+    checkout.innerHTML=`<div class="banner bad">${esc(error.message||"Could not start the search.")}</div>`;
+    go.disabled=false; go.textContent=GO_LABEL; stopMeter(); progressbox.style.display="none";
+    return {error:error.message};
+  }
   if(j.error){ checkout.innerHTML=`<div class="banner bad">${esc(j.error)}</div>`;
     go.disabled=false; go.textContent=GO_LABEL; stopMeter();
     return Promise.resolve({error:j.error}); }
@@ -711,10 +784,43 @@ async function startRun(body){
 form.addEventListener("submit", e=>{
   e.preventDefault();
   const body=baseBody();
-  if(!body.market.trim()){ alert("Type an area to search."); return; }
-  if(!body.sources.length){ alert("Leave at least one data source ticked under “Where the data comes from”."); return; }
+  for(const [id,min,max] of [["enrich_cap",0,100],["limit",1,500]]){
+    const field=document.getElementById(id), value=Number(field.value);
+    if(!Number.isInteger(value)||value<min||value>max){
+      field.classList.add("field-invalid");field.setAttribute("aria-invalid","true");
+      let error=field.nextElementSibling;
+      if(!error||!error.classList.contains("field-error")){error=document.createElement("div");error.className="field-error";field.after(error);}
+      error.textContent=`Enter a whole number from ${min} to ${max}.`;field.focus();return;
+    }
+    field.classList.remove("field-invalid");field.removeAttribute("aria-invalid");
+    if(field.nextElementSibling&&field.nextElementSibling.classList.contains("field-error"))field.nextElementSibling.textContent="";
+  }
+  if(!body.market.trim()){ showLocationError("Enter a city, region, or other search area."); document.getElementById("market").focus(); return; }
+  clearLocationError();
+  if(!body.sources.length){ checkout.innerHTML='<div class="banner warn" role="alert">Select at least one data source to continue.</div>'; return; }
   saveMarket(body.market); startRun(body);
 });
+
+document.querySelectorAll("#category_picker input[name=category]").forEach(box=>{
+  box.addEventListener("change", ()=>{
+    const all=document.querySelector("#category_picker input[value=all]");
+    if(box.value==="all" && box.checked){
+      document.querySelectorAll("#category_picker input:not([value=all])").forEach(other=>other.checked=false);
+    }else if(box.checked){ all.checked=false; }
+    if(!document.querySelector("#category_picker input:checked")) all.checked=true;
+    updateCategoryCount();
+  });
+});
+function updateCategoryCount(){
+  const chosen=[...document.querySelectorAll("#category_picker input:checked")];
+  const all=chosen.some(x=>x.value==="all");
+  document.getElementById("category_count").textContent=all?"All categories":`${chosen.length} selected`;
+}
+function showLocationError(message){const input=document.getElementById("market");input.classList.add("field-invalid");input.setAttribute("aria-invalid","true");document.getElementById("market_error").textContent=message;}
+function clearLocationError(){const input=document.getElementById("market");input.classList.remove("field-invalid");input.removeAttribute("aria-invalid");document.getElementById("market_error").textContent="";}
+document.getElementById("market").addEventListener("input",clearLocationError);
+document.getElementById("clear_categories").addEventListener("click",()=>{document.querySelectorAll("#category_picker input").forEach(x=>x.checked=false);updateCategoryCount();});
+updateCategoryCount();
 
 checkBtn.addEventListener("click", async ()=>{
   checkBtn.disabled=true; checkout.innerHTML="<div class='hint'>Testing each data source…</div>";
@@ -732,29 +838,41 @@ checkBtn.addEventListener("click", async ()=>{
 function poll(jid){
  return new Promise(resolve=>{
   const t=setInterval(async ()=>{
-    const r=await fetch("/progress/"+jid); const j=await r.json();
-    statusEl.textContent=j.log.join("\\n"); statusEl.scrollTop=statusEl.scrollHeight;
+    let j;
+    try{
+      const r=await fetch("/progress/"+jid); j=await r.json();
+      if(!r.ok) throw new Error(j.error||"Progress request failed");
+    }catch(error){
+      clearInterval(t); go.disabled=false; go.textContent=GO_LABEL; stopMeter();
+      progressbox.style.display="none";
+      checkout.innerHTML=`<div class="banner bad">${esc(error.message||"Could not read search progress.")}</div>`;
+      resolve({error:error.message}); return;
+    }
+    statusEl.textContent=j.log.join("\\n"); if(logPinned) statusEl.scrollTop=statusEl.scrollHeight;
     updateMeter(j.log);
+    updatePhase(j.log, j.done);
     if(j.done){
       clearInterval(t); go.disabled=false; go.textContent=GO_LABEL;
-      stopMeter(); loadRecent();
+      stopMeter(); progressbox.style.display="none"; loadRecent();
       // Mid-run recovery: error OR a source reported "failed" in the log → retry banner.
       const logText=(j.log||[]).join("\\n");
       const sourceFailed=/failed/i.test(logText);
       if(j.error || sourceFailed){
-        const msg=j.error || "A data source failed during this run — results may be incomplete.";
-        checkout.innerHTML=`<div class="banner bad" id="retrybanner">${esc(msg)} `
+        const msg=j.error || "Partial results: a selected data source failed, so coverage may be incomplete.";
+        checkout.innerHTML=`<div class="banner ${j.error?"bad":"warn"}" id="retrybanner" role="status">${esc(msg)} `
           +`<button type="button" class="ghost" id="retrybtn" style="padding:5px 12px;margin-left:8px">↻ Retry</button></div>`;
         const rb=document.getElementById("retrybtn");
         if(rb) rb.addEventListener("click", ()=>{ if(lastBody) startRun(Object.assign({}, lastBody)); });
       }
       else if(j.notice){ checkout.innerHTML=`<div class="banner warn">${esc(j.notice)}</div>`; }
       if(j.stats){
+        if(!j.error)document.getElementById("resultsheading").style.display="flex";
         summary.style.display="flex";
         s_total.textContent=j.stats.total; s_A.textContent=j.stats.A;
         const rows=j.leads||[];
+        s_opportunity.textContent=rows.filter(r=>["NO_WEBSITE_FOUND","SOCIAL_ONLY","OUTDATED_WEBSITE","WEBSITE_BROKEN"].includes(r.website_status)).length;
         s_contact.textContent=rows.filter(r=>r.phone||r.business_email||r.email).length;
-        s_review.textContent=rows.filter(r=>r.qualification==="Needs Review"||r.quality_warnings).length;
+        s_review.textContent=rows.filter(r=>r.qualification==="Needs Review"||r.quality_warnings||r.website_status==="UNKNOWN").length;
       }
       if(j.files && (j.files.csv||j.files.xlsx)){
         dls.style.display="flex"; dls.innerHTML="";
@@ -777,6 +895,7 @@ function poll(jid){
 let curLeads=[], curCols=[];
 let visibleCols={};        // key -> bool (shown in preview)
 let sortKey=null, sortDir=1; // 1 asc, -1 desc
+let categoryOptions=new Set(), statusOptions=new Set();
 const PHONE_KEYS=new Set(["phone","telephone","tel"]);
 const EMAIL_KEYS=new Set(["email","e-mail","mail"]);
 
@@ -793,7 +912,16 @@ function renderTable(leads, columns){
   visibleCols={};
   curCols.forEach((c,i)=>{ const k=c[1];
     visibleCols[k] = savedVis && (k in savedVis) ? !!savedVis[k] : i<9; });
-  sortKey=null; sortDir=1;
+  sortKey=curCols.find(c=>c[1]==="score")?.[1]||null; sortDir=-1;
+  categoryOptions=new Set(curLeads.map(r=>r.category).filter(Boolean));
+  statusOptions=new Set(curLeads.map(r=>r.website_status).filter(Boolean));
+  const locationOptions=new Set(curLeads.map(r=>r.city||r.locality||r.state).filter(Boolean));
+  document.getElementById("r_category").innerHTML="<option value=''>All categories</option>"+
+    [...categoryOptions].sort().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+  document.getElementById("r_status").innerHTML="<option value=''>All website statuses</option>"+
+    [...statusOptions].sort().map(v=>`<option value="${esc(v)}">${esc(statusLabel(v))}</option>`).join("");
+  document.getElementById("r_location").innerHTML="<option value=''>All locations</option>"+
+    [...locationOptions].sort().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
   document.getElementById("resultsearch").style.display="block";
   document.getElementById("resulttools").style.display="flex";
   buildColPanel();
@@ -816,9 +944,17 @@ function shownCols(){ return curCols.filter(c=>visibleCols[c[1]]); }
 
 function filteredRows(){
   const q=(document.getElementById("r_filter").value||"").toLowerCase().trim();
+  const category=document.getElementById("r_category").value;
+  const location=document.getElementById("r_location").value;
+  const websiteStatus=document.getElementById("r_status").value;
+  const grade=document.getElementById("r_grade").value;
+  const contact=document.getElementById("r_contact").value;
   const cols=shownCols();
   const match=r=>cols.some(c=>String(r[c[1]]==null?"":r[c[1]]).toLowerCase().includes(q));
-  let rows=q?curLeads.filter(match):curLeads.slice();
+  let rows=curLeads.filter(r=>(!q||match(r))&&(!category||r.category===category)&&
+    (!location||(r.city||r.locality||r.state)===location)&&(!grade||String(r.tier||"")===grade)&&
+    (!websiteStatus||r.website_status===websiteStatus)&&
+    (!contact||(contact==="yes" ? !!(r.phone||r.business_email||r.email) : !(r.phone||r.business_email||r.email))));
   if(sortKey!=null){
     rows.sort((a,b)=>{
       let x=a[sortKey], y=b[sortKey];
@@ -834,9 +970,13 @@ function filteredRows(){
 
 function cellHTML(r, key){
   const raw=r[key]; const v=String(raw==null?"":raw);
-  if(!v) return "";
+  if(!v){
+    if(PHONE_KEYS.has(key)||EMAIL_KEYS.has(key)) return '<span class="notfound">Not found</span>';
+    if(["website","source_url","website_audit_url"].includes(key)) return '<span class="notfound">Not verified</span>';
+    return '<span class="notfound">—</span>';
+  }
   if(key==="website_status"||key==="qualification"){
-    return `<span class="statusbadge ${esc(String(v).toLowerCase().replace(/[^a-z0-9]+/g,"-"))}">${esc(v)}</span>`;
+    return `<span class="statusbadge">${esc(key==="website_status"?statusLabel(v):v)}</span>`;
   }
   if(["website","source_url","contact_source","website_audit_url"].includes(key)
       && /^https?:\/\//i.test(v)){
@@ -853,15 +993,20 @@ function cellHTML(r, key){
   }
   return esc(v);
 }
+function statusLabel(value){
+  const labels={NO_WEBSITE_FOUND:"No website found",VERIFIED_NO_WEBSITE:"No website found",SOCIAL_ONLY:"Social-only presence",OUTDATED_WEBSITE:"Outdated website",WEBSITE_BROKEN:"Broken website",FUNCTIONAL_WEBSITE:"Functional website",BASIC_WEBSITE:"Functional website",UNKNOWN:"Inconclusive audit",NOT_CHECKED:"Not checked"};
+  return labels[value]||String(value||"Not checked").replace(/_/g," ").toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase());
+}
 
 function drawRows(){
+  updateActiveFilters();
   const cols=shownCols();
   const all=filteredRows();
   const rows=all.slice(0,500);
   document.getElementById("exportcount").textContent=
     all.length+" row(s) match"+(curLeads.length!==all.length?" of "+curLeads.length:"");
   const arrow=k=> sortKey===k ? `<span class="arrow">${sortDir>0?"▲":"▼"}</span>` : `<span class="arrow">↕</span>`;
-  let h="<thead><tr>"+cols.map(c=>`<th data-k="${esc(c[1])}">${esc(c[0])}${arrow(c[1])}</th>`).join("")
+  let h="<thead><tr>"+cols.map(c=>`<th data-k="${esc(c[1])}" tabindex="0" role="button" aria-label="Sort by ${esc(c[0])}">${esc(c[0])}${arrow(c[1])}</th>`).join("")
     +`<th>Status</th></tr></thead><tbody>`;
   for(const r of rows){
     const tier=r.tier||"C";
@@ -869,7 +1014,7 @@ function drawRows(){
     const tagClass=tg?` tagged-${esc(tg)}`:"";
     h+=`<tr class="tier${esc(tier)}${tagClass}">`
       +cols.map(c=>`<td>${cellHTML(r,c[1])}</td>`).join("")
-      +`<td><span class="tagbtns" data-key="${esc(leadKey(r))}">`
+      +`<td><button type="button" class="cellbtn draweropen" data-detail="${esc(leadKey(r))}">Details</button><span class="tagbtns" data-key="${esc(leadKey(r))}">`
       +`<button type="button" data-tag="contacted" class="${tg==='contacted'?'on-c':''}" title="Mark contacted">✓</button>`
       +`<button type="button" data-tag="not_interested" class="${tg==='not_interested'?'on-n':''}" title="Not interested">✕</button>`
       +`</span></td></tr>`;
@@ -881,6 +1026,7 @@ function drawRows(){
     if(sortKey===k) sortDir=-sortDir; else { sortKey=k; sortDir=1; }
     drawRows();
   }));
+  table.querySelectorAll("th[data-k]").forEach(th=>th.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();th.click();}}));
   // copy buttons
   table.querySelectorAll("button[data-copy]").forEach(b=>b.addEventListener("click", ev=>{
     ev.stopPropagation();
@@ -896,8 +1042,65 @@ function drawRows(){
     if(tags[key]===val) delete tags[key]; else tags[key]=val;
     saveTags(tags); drawRows();
   }));
+  table.querySelectorAll("[data-detail]").forEach(b=>b.addEventListener("click", ()=>{
+    const record=curLeads.find(item=>leadKey(item)===b.dataset.detail); if(record) openDrawer(record);
+  }));
+}
+function updateActiveFilters(){
+  const entries=[["r_filter","Search"],["r_category","Category"],["r_location","Location"],["r_status","Website status"],["r_grade","Grade"],["r_contact","Contact"]];
+  const chips=[];
+  for(const [id,label] of entries){
+    const el=document.getElementById(id);if(!el.value)continue;
+    const value=el.tagName==="SELECT"?el.options[el.selectedIndex]?.text:el.value;
+    chips.push(`<button type="button" class="filterchip" data-clear-filter="${id}" aria-label="Remove ${esc(label)} filter">${esc(label)}: ${esc(value)} ×</button>`);
+  }
+  const box=document.getElementById("activefilters");box.innerHTML=chips.join("");
+  box.querySelectorAll("[data-clear-filter]").forEach(b=>b.addEventListener("click",()=>{document.getElementById(b.dataset.clearFilter).value="";drawRows();}));
 }
 document.getElementById("r_filter").addEventListener("input", drawRows);
+["r_category","r_location","r_status","r_grade","r_contact"].forEach(id=>document.getElementById(id).addEventListener("change",drawRows));
+document.getElementById("r_clear").addEventListener("click", ()=>{
+  document.getElementById("r_filter").value="";
+  ["r_category","r_location","r_status","r_grade","r_contact"].forEach(id=>document.getElementById(id).value="");
+  drawRows();
+});
+
+let drawerReturnFocus=null;
+function openDrawer(r){
+  drawerReturnFocus=document.activeElement;
+  const value=(key, fallback="Not verified")=>r[key] ? String(r[key]) : fallback;
+  document.getElementById("drawertitle").textContent=value("name","Prospect");
+  document.getElementById("drawersubtitle").textContent=[value("category","Category not found"),value("city","Location not verified")].join(" · ");
+  document.getElementById("drawergrid").innerHTML=[
+    ["Website status",statusLabel(value("website_status","Not checked"))],["Opportunity score",value("score","Not scored")],
+    ["Phone",value("phone")],["Email",value("business_email",value("email"))],
+    ["Website",value("website","Not found")],["Last checked",value("checked_at")]
+  ].map(([label,data])=>`<div><b>${esc(label)}</b>${label==="Website"&&/^https?:\/\//i.test(data)?`<a href="${esc(data)}" target="_blank" rel="noopener">${esc(data)}</a>`:`<span>${esc(data)}</span>`}</div>`).join("");
+  document.getElementById("drawerwhy").textContent=value("why");
+  document.getElementById("drawerevidence").textContent=[value("website_status_evidence"),value("website_status_confidence"),value("audit_notes","")].filter(Boolean).join(" · ");
+  document.getElementById("drawersource").textContent=value("source_url","Source not available");
+  const status=r.website_status||"";
+  document.getElementById("draweraction").textContent=status==="UNKNOWN"||status==="WEBSITE_BROKEN" ?
+    "Re-check the website and verify contact details before outreach." :
+    status==="FUNCTIONAL_WEBSITE" ? "Review the site manually for a specific improvement angle." :
+    "Verify the business and contact details before contacting.";
+  document.getElementById("drawerbackdrop").style.display="block";
+  document.getElementById("drawerbackdrop").setAttribute("aria-hidden","false");
+  document.getElementById("drawerclose").focus();
+}
+function closeDrawer(){ document.getElementById("drawerbackdrop").style.display="none"; document.getElementById("drawerbackdrop").setAttribute("aria-hidden","true"); if(drawerReturnFocus&&drawerReturnFocus.focus)drawerReturnFocus.focus(); }
+document.getElementById("drawerclose").addEventListener("click",closeDrawer);
+document.getElementById("drawerbackdrop").addEventListener("click",e=>{if(e.target.id==="drawerbackdrop")closeDrawer();});
+document.addEventListener("keydown",e=>{
+  const backdrop=document.getElementById("drawerbackdrop");if(backdrop.style.display!=="block")return;
+  if(e.key==="Escape"){closeDrawer();return;}
+  if(e.key==="Tab"){
+    const focusable=[...backdrop.querySelectorAll("a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex='-1'])")];
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
 
 // Column chooser open/close
 document.getElementById("colbtn").addEventListener("click", e=>{
@@ -1085,6 +1288,21 @@ function updateMeter(log){
   }
   const chips=Object.entries(tally).map(([k,v])=>`<span class="chip"><b>${esc(k)}</b> ${v}</span>`).join("");
   document.getElementById("runchips").innerHTML=chips;
+}
+function updatePhase(log, done){
+  if(done){ runphase.textContent="Search complete — preparing your results"; return; }
+  const text=(log||[]).join(" ");
+  const phases=[
+    [/Market:|bbox=/,"Resolving the search area…"],
+    [/Overture:|OSM:|Socrata:|NPI:|Foursquare:/,"Collecting businesses from selected sources…"],
+    [/deduping|after dedupe/i,"Removing duplicate listings…"],
+    [/radius filter|category filter/i,"Checking location and category fit…"],
+    [/Enriching|enriched/i,"Auditing selected websites…"],
+    [/Scored/i,"Scoring website opportunities…"],
+    [/ERROR/i,"Recovering from a source issue…"]
+  ];
+  const match=phases.find(([pattern])=>pattern.test(text));
+  runphase.textContent=match ? match[1] : "Working through your search…";
 }
 function stopMeter(){ clearInterval(meterTimer); meterTimer=null; }
 
