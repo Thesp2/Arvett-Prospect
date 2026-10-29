@@ -39,6 +39,7 @@ dependencies = [
 gui = [
     "flask>=3.0",
     "pywebview>=5.0",
+    "gunicorn>=22.0; platform_system != 'Windows'",
 ]
 
 [project.urls]

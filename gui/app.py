@@ -1081,11 +1081,12 @@ loadSavedMarkets();
 
 
 def main():
-    port = free_port()
+    port = int(os.environ.get("PORT", "5000"))
+    host = "0.0.0.0"
     print("\n" + "=" * 46)
-    print(f"  Arvett LeadFinder  →  http://127.0.0.1:{port}")
+    print(f"  Arvett LeadFinder  →  http://{host}:{port}")
     print("=" * 46 + "\n")
-    app.run(host="127.0.0.1", port=port, debug=False, threaded=True)
+    app.run(host=host, port=port, debug=False, threaded=True)
 
 
 if __name__ == "__main__":

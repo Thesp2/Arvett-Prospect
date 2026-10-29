@@ -16,9 +16,11 @@ WORKDIR /app
 COPY . /app
 RUN pip install --no-cache-dir ".[gui]"
 
-# Flask GUI listens on 5000.
+# Render supplies PORT at runtime; 5000 is the local fallback.
 EXPOSE 5000
 
-# Default: serve the web GUI. Override CMD to run the CLI, e.g.:
+# Production WSGI server for the Flask app instance in gui/app.py.
+# Use a shell so ${PORT:-5000} is expanded when the container starts.
+# Override CMD to run the CLI, e.g.:
 #   docker run --rm leadgen python -m leadgen --vertical web_design --market austin_tx
-CMD ["python", "gui/app.py"]
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 120 gui.app:app"]

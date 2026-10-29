@@ -1,5 +1,6 @@
 # Web UI
 flask>=3.0
+gunicorn>=22.0; platform_system != "Windows"
 # Engine dependencies (also in leadgen/requirements.txt)
 requests>=2.31
 openpyxl>=3.1

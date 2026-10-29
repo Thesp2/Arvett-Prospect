@@ -38,6 +38,21 @@ python gui\app.py
 
 Open the local URL printed by the app, normally `http://127.0.0.1:5000`. Keep the terminal window open while using it. Stop the local server with `Ctrl+C`.
 
+## Render/Docker deployment
+
+The Docker image installs the GUI dependencies, including Gunicorn, and starts
+the Flask instance with `gui.app:app`. The container binds to
+`0.0.0.0:${PORT:-5000}`, so Render's `PORT` value is honored and local Docker
+runs fall back to port 5000:
+
+```powershell
+docker build -t arvett-leadfinder .
+docker run --rm -p 5000:5000 -e PORT=5000 arvett-leadfinder
+```
+
+Render should use the repository `Dockerfile` without replacing its startup
+command. No API keys or secrets are required in the image.
+
 ## Recommended first search
 
 - Business category: All local businesses or one targeted category.
@@ -57,7 +72,8 @@ Open the local URL printed by the app, normally `http://127.0.0.1:5000`. Keep th
 - Employee counts and company size are left `Unknown` unless a reliable source is available; the tool does not invent company size.
 - Website audit failures are marked for rechecking rather than treated as confirmed broken sites.
 - Use data sources in line with their licenses and terms. The workbook records the source record URL to support manual review.
-- This is a local development server, not a production deployment. Do not expose it to the public internet.
+- Running `python gui\app.py` directly uses Flask's development server and is
+  intended for local use. Container deployments use Gunicorn instead.
 
 ## Outputs
 
